@@ -1,9 +1,16 @@
 package pomelo
 
 import (
+	"bytes"
+	"crypto/rand"
+	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/eknkc/basex"
+	"golang.org/x/crypto/chacha20poly1305"
 )
 
 const (
@@ -54,4 +61,50 @@ func NewPomelo(key string) (b *Pomelo) {
 	return &Pomelo{
 		Key: key,
 	}
+}
+
+// EncodeToString encodes the data matching the format:
+// Version (byte) || Timestamp ([4]byte) || Random ([24]byte) || Ciphertext ([]byte) || Tag ([16]byte)
+func (b *Pomelo) EncodeToString(data string) (string, error) {
+	var timestamp uint32
+	var random []byte
+	if b.timestamp == 0 {
+		b.timestamp = uint32(time.Now().Unix())
+	}
+	timestamp = b.timestamp
+
+	if len(b.random) == 0 {
+		random = make([]byte, 24)
+		if _, err := rand.Read(random); err != nil {
+			return "", err
+		}
+	} else {
+		randombytes, err := hex.DecodeString(b.random)
+		if err != nil {
+			return "", ErrInvalidToken
+		}
+		random = randombytes
+	}
+
+	key := bytes.NewBufferString(b.Key).Bytes()
+	payload := bytes.NewBufferString(data).Bytes()
+
+	timeBuffer := make([]byte, 4)
+	binary.BigEndian.PutUint32(timeBuffer, timestamp)
+	header := append(timeBuffer, random...)
+	header = append([]byte{version}, header...)
+
+	xchacha, err := chacha20poly1305.NewX(key)
+	if err != nil {
+		return "", ErrBadKeyLength
+	}
+
+	ciphertext := xchacha.Seal(nil, random, payload, header)
+
+	token := append(header, ciphertext...)
+	base62, err := basex.NewEncoding(base62)
+	if err != nil {
+		return "", err
+	}
+	return base62.Encode(token), nil
 }
