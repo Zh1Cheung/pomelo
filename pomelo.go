@@ -108,3 +108,49 @@ func (b *Pomelo) EncodeToString(data string) (string, error) {
 	}
 	return base62.Encode(token), nil
 }
+
+// DecodeToString decodes the data.
+func (b *Pomelo) DecodeToString(data string) (string, error) {
+	if len(data) < 62 {
+		return "", fmt.Errorf("%w: length is less than 62", ErrInvalidToken)
+	}
+	base62, err := basex.NewEncoding(base62)
+	if err != nil {
+		return "", fmt.Errorf("%v", err)
+	}
+	token, err := base62.Decode(data)
+	if err != nil {
+		return "", ErrInvalidToken
+	}
+	header := token[:29]
+	ciphertext := token[29:]
+	tokenversion := header[0]
+	timestamp := binary.BigEndian.Uint32(header[1:5])
+	random := header[5:]
+
+	if tokenversion != version {
+		return "", fmt.Errorf("%w: got %#X but expected %#X", ErrInvalidTokenVersion, tokenversion, version)
+	}
+
+	key := bytes.NewBufferString(b.Key).Bytes()
+
+	xchacha, err := chacha20poly1305.NewX(key)
+	if err != nil {
+		return "", ErrBadKeyLength
+	}
+	payload, err := xchacha.Open(nil, random, ciphertext, header)
+	if err != nil {
+		return "", err
+	}
+
+	if b.ttl != 0 {
+		future := int64(timestamp + b.ttl)
+		now := time.Now().Unix()
+		if future < now {
+			return "", &ErrExpiredToken{Time: time.Unix(future, 0)}
+		}
+	}
+
+	payloadString := bytes.NewBuffer(payload).String()
+	return payloadString, nil
+}

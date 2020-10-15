@@ -20,9 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70b06493-62d9-4e40-8648-dbfb039a84f0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pomelo.go" beforeDir="false" afterPath="$PROJECT_DIR$/pomelo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pomelo_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/pomelo_test.go" afterDir="false" />
     </list>
@@ -66,6 +63,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
