@@ -20,7 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70b06493-62d9-4e40-8648-dbfb039a84f0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/pomelo.go" beforeDir="false" afterPath="$PROJECT_DIR$/pomelo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pomelo_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/pomelo_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

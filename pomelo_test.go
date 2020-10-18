@@ -1,7 +1,9 @@
 package pomelo
 
 import (
+	"errors"
 	"testing"
+	"time"
 )
 
 var (
@@ -85,6 +87,59 @@ func TestVector2(t *testing.T) {
 		}
 		if decoded != "" {
 			t.Errorf("DecodeToString(\"%s\") = %s. got %s, expected %q", table.expected, decoded, decoded, table.expected)
+		}
+	}
+}
+
+// TestGenerateToken for testing issuing pomelo tokens.
+func TestGenerateToken(t *testing.T) {
+	testVectors = []struct {
+		key       string
+		random    string
+		timestamp uint32
+		payload   string
+		expected  string
+	}{
+		{"supersecretkeyyoushouldnotcommit", "0102030405060708090a0b0c0102030405060708090a0b0c", 123206400, "Hello world!", "875GH233T7IYrxtgXxlQBYiFobZMQdHAT51vChKsAIYCFxZtL1evV54vYqLyZtQ0ekPHt8kJHQp0a"},
+	}
+
+	for _, table := range testVectors {
+		// Not generated with set timestamp.
+		b := NewPomelo(table.key)
+
+		// Encode string.
+		encoded, err := b.EncodeToString(table.payload)
+		if err != nil {
+			t.Errorf("%q", err)
+		}
+		if encoded == table.expected {
+			t.Errorf("EncodeToString(\"%s\") = %s. got %s, expected %q", table.payload, encoded, encoded, table.expected)
+		}
+	}
+}
+
+// TestInvalidEncodeString for testing errors when generating pomelo tokens.
+func TestInvalidEncodeString(t *testing.T) {
+	testVectors = []struct {
+		key       string
+		random    string
+		timestamp uint32
+		payload   string
+		expected  string
+	}{
+		{"supersecretkeyyoushouldnotcommi", "0102030405060708090a0b0c0102030405060708090a0b0c", 123206400, "Hello world!", "875GH233T7IYrxtgXxlQBYiFobZMQdHAT51vChKsAIYCFxZtL1evV54vYqLyZtQ0ekPHt8kJHQp0a"}, // Invalid key
+
+		{"supersecretkeyyoushouldnotcommi", "", 123206400, "Hello world!",
+			"875GH233T7IYrxtgXxlQBYiFobZMQdHAT51vChKsAIYCFxZtL1evV54vYqLyZtQ0ekPHt8kJHQp0a"}, // Invalid key + no random
+
+	}
+
+	for _, table := range testVectors {
+		b := NewPomelo(table.key)
+
+		_, err := b.EncodeToString(table.payload)
+		if err == nil {
+			t.Errorf("%q", err)
 		}
 	}
 }
