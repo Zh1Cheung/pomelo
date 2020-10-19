@@ -203,3 +203,35 @@ func TestInvalidTokenError(t *testing.T) {
 		t.Errorf("%v", err)
 	}
 }
+
+// TestInvalidTokenVersionError tests if decoding an invalid token returns the corresponding error type.
+func TestInvalidTokenVersionError(t *testing.T) {
+	// A token with an invalid version where the HEX value 0XBA has been replaced with 0xFF.
+	// The original token is "1WgRcDTWm6MyptVOMG9TeEPVcYW01K6hW5SzLrzCkLlrOOovO5TmpDxQql12N2n0jELx".
+	tokenWithInvalidVersion := "25jsrzc9Q6kmzrnCYWf5Z7LCOG2C7Uiu3NbTP0B9ppLDrxZkhLGOuFVB6FqrWp0ypJTF"
+
+	b := NewPomelo("supersecretkeyyoushouldnotcommit")
+	_, err := b.DecodeToString(tokenWithInvalidVersion)
+	if !errors.Is(err, ErrInvalidTokenVersion) {
+		t.Errorf("%v", err)
+	}
+}
+
+// TestBadKeyLengthError tests if (en/de)coding a token with an invalid key returns the corresponding error type.
+func TestBadKeyLengthError(t *testing.T) {
+	validToken := "875GH233T7IYrxtgXxlQBYiFobZMQdHAT51vChKsAIYCFxZtL1evV54vYqLyZtQ0ekPHt8kJHQp0a"
+	testKeys := []string{
+		"",
+		"thiskeyistooshort",
+		"thiskeyislongerthantheexpected32bytes",
+	}
+
+	for _, key := range testKeys {
+		b := NewPomelo(key)
+
+		_, err := b.DecodeToString(validToken)
+		if !errors.Is(err, ErrBadKeyLength) {
+			t.Errorf("%v", err)
+		}
+	}
+}
