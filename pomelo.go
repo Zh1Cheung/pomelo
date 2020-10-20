@@ -6,37 +6,28 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/eknkc/basex"
-	"golang.org/x/crypto/chacha20poly1305"
+	chacha20poly1305 "github.com/aead/chacha20poly1305"
+	basex "github.com/eknkc/basex"
 )
 
 const (
-	version byte   = 0xBA // Magic byte
-	base62  string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	version byte = 0xBA // Pomelo magic byte
+	base62       = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 )
 
 var (
-	ErrInvalidToken        = errors.New("invalid base62 token")
-	ErrInvalidTokenVersion = errors.New("invalid token version")
-	ErrBadKeyLength        = errors.New("bad key length")
+	errInvalidToken        = errors.New("invalid base62 token")
+	errInvalidTokenVersion = errors.New("invalid token version")
+	errBadKeyLength        = errors.New("bad key length")
+	errExpiredToken        = errors.New("token is expired")
 )
 
-type ErrExpiredToken struct {
-	Time time.Time
-}
-
-func (e *ErrExpiredToken) Error() string {
-	delta := time.Unix(time.Now().Unix(), 0).Sub(time.Unix(e.Time.Unix(), 0))
-	return fmt.Sprintf("token is expired by %v", delta)
-}
-
-// Pomelo holds a key of exactly 32 bytes. The random and timestamp are used for acceptance tests.
+// Pomelo holds a key of exactly 32 bytes. The nonce and timestamp are used for acceptance tests.
 type Pomelo struct {
 	Key       string
-	random    string
+	nonce     string
 	ttl       uint32
 	timestamp uint32
 }
@@ -51,9 +42,9 @@ func (b *Pomelo) setTimeStamp(timestamp uint32) {
 	b.timestamp = timestamp
 }
 
-// setRandom sets a random for testing.
-func (b *Pomelo) setRandom(random string) {
-	b.random = random
+// setNonce sets a nonce for testing.
+func (b *Pomelo) setNonce(nonce string) {
+	b.nonce = nonce
 }
 
 // NewPomelo creates a *Pomelo struct.
@@ -64,26 +55,27 @@ func NewPomelo(key string) (b *Pomelo) {
 }
 
 // EncodeToString encodes the data matching the format:
-// Version (byte) || Timestamp ([4]byte) || Random ([24]byte) || Ciphertext ([]byte) || Tag ([16]byte)
+// Version (byte) || Timestamp ([4]byte) || Nonce ([24]byte) || Ciphertext ([]byte) || Tag ([16]byte)
 func (b *Pomelo) EncodeToString(data string) (string, error) {
 	var timestamp uint32
-	var random []byte
+	var nonce []byte
 	if b.timestamp == 0 {
 		b.timestamp = uint32(time.Now().Unix())
 	}
 	timestamp = b.timestamp
 
-	if len(b.random) == 0 {
-		random = make([]byte, 24)
-		if _, err := rand.Read(random); err != nil {
+	if len(b.nonce) == 0 {
+		nonce = make([]byte, 24)
+		_, err := rand.Read(nonce)
+		if err != nil {
 			return "", err
 		}
 	} else {
-		randombytes, err := hex.DecodeString(b.random)
+		noncebytes, err := hex.DecodeString(b.nonce)
 		if err != nil {
-			return "", ErrInvalidToken
+			return "", errInvalidToken
 		}
-		random = randombytes
+		nonce = noncebytes
 	}
 
 	key := bytes.NewBufferString(b.Key).Bytes()
@@ -91,15 +83,15 @@ func (b *Pomelo) EncodeToString(data string) (string, error) {
 
 	timeBuffer := make([]byte, 4)
 	binary.BigEndian.PutUint32(timeBuffer, timestamp)
-	header := append(timeBuffer, random...)
+	header := append(timeBuffer, nonce...)
 	header = append([]byte{version}, header...)
 
-	xchacha, err := chacha20poly1305.NewX(key)
+	xchacha, err := chacha20poly1305.NewXCipher(key)
 	if err != nil {
-		return "", ErrBadKeyLength
+		return "", errBadKeyLength
 	}
 
-	ciphertext := xchacha.Seal(nil, random, payload, header)
+	ciphertext := xchacha.Seal(nil, nonce, payload, header)
 
 	token := append(header, ciphertext...)
 	base62, err := basex.NewEncoding(base62)
@@ -112,33 +104,33 @@ func (b *Pomelo) EncodeToString(data string) (string, error) {
 // DecodeToString decodes the data.
 func (b *Pomelo) DecodeToString(data string) (string, error) {
 	if len(data) < 62 {
-		return "", fmt.Errorf("%w: length is less than 62", ErrInvalidToken)
+		return "", errInvalidToken
 	}
 	base62, err := basex.NewEncoding(base62)
 	if err != nil {
-		return "", fmt.Errorf("%v", err)
+		return "", errInvalidToken
 	}
 	token, err := base62.Decode(data)
 	if err != nil {
-		return "", ErrInvalidToken
+		return "", errInvalidToken
 	}
-	header := token[:29]
+	header := token[0:29]
 	ciphertext := token[29:]
 	tokenversion := header[0]
 	timestamp := binary.BigEndian.Uint32(header[1:5])
-	random := header[5:]
+	nonce := header[5:]
 
 	if tokenversion != version {
-		return "", fmt.Errorf("%w: got %#X but expected %#X", ErrInvalidTokenVersion, tokenversion, version)
+		return "", errInvalidTokenVersion
 	}
 
 	key := bytes.NewBufferString(b.Key).Bytes()
 
-	xchacha, err := chacha20poly1305.NewX(key)
+	xchacha, err := chacha20poly1305.NewXCipher(key)
 	if err != nil {
-		return "", ErrBadKeyLength
+		return "", errBadKeyLength
 	}
-	payload, err := xchacha.Open(nil, random, ciphertext, header)
+	payload, err := xchacha.Open(nil, nonce, ciphertext, header)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +139,7 @@ func (b *Pomelo) DecodeToString(data string) (string, error) {
 		future := int64(timestamp + b.ttl)
 		now := time.Now().Unix()
 		if future < now {
-			return "", &ErrExpiredToken{Time: time.Unix(future, 0)}
+			return "", errExpiredToken
 		}
 	}
 

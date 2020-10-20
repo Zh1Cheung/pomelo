@@ -20,6 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70b06493-62d9-4e40-8648-dbfb039a84f0" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pomelo.go" beforeDir="false" afterPath="$PROJECT_DIR$/pomelo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pomelo_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/pomelo_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -49,12 +53,14 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="GO_FMT" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -74,6 +80,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <option name="LAST_COMMIT_MESSAGE" value="" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -87,5 +94,17 @@
       <screen x="0" y="23" width="1792" height="1025" />
     </state>
     <state x="1070" y="376" key="#Go_Modules/0.23.1792.1025@0.23.1792.1025" timestamp="1602487602243" />
+    <state x="561" y="103" key="SettingsEditor" timestamp="1603181202230">
+      <screen x="0" y="23" width="1792" height="1025" />
+    </state>
+    <state x="561" y="103" key="SettingsEditor/0.23.1792.1025@0.23.1792.1025" timestamp="1603181202230" />
+    <state x="784" y="272" key="Vcs.Push.Dialog.v2" timestamp="1603182064849">
+      <screen x="0" y="23" width="1792" height="1025" />
+    </state>
+    <state x="784" y="272" key="Vcs.Push.Dialog.v2/0.23.1792.1025@0.23.1792.1025" timestamp="1603182064849" />
+    <state x="829" y="217" width="602" height="580" key="find.popup" timestamp="1603181985783">
+      <screen x="0" y="23" width="1792" height="1025" />
+    </state>
+    <state x="829" y="217" width="602" height="580" key="find.popup/0.23.1792.1025@0.23.1792.1025" timestamp="1603181985783" />
   </component>
 </project>
