@@ -14,7 +14,7 @@ var (
 	}
 )
 
-// TestVector1 for testing encoding data to a valid branca token.
+// TestVector1 for testing encoding data to a valid pomelo token.
 func TestVector1(t *testing.T) {
 	testVectors = []struct {
 		key       string
@@ -51,7 +51,7 @@ func TestVector1(t *testing.T) {
 	}
 }
 
-// TestVector2 for testing encoding data to a valid branca token.
+// TestVector2 for testing encoding data to a valid pomelo token.
 func TestVector2(t *testing.T) {
 	testVectors = []struct {
 		key       string
@@ -89,7 +89,7 @@ func TestVector2(t *testing.T) {
 	}
 }
 
-// TestGenerateToken for testing issuing branca tokens.
+// TestGenerateToken for testing issuing pomelo tokens.
 func TestGenerateToken(t *testing.T) {
 	testVectors = []struct {
 		key       string
@@ -116,7 +116,7 @@ func TestGenerateToken(t *testing.T) {
 	}
 }
 
-// TestInvalidEncodeString for testing errors when generating branca tokens.
+// TestInvalidEncodeString for testing errors when generating pomelo tokens.
 func TestInvalidEncodeString(t *testing.T) {
 	testVectors = []struct {
 		key       string
@@ -142,7 +142,7 @@ func TestInvalidEncodeString(t *testing.T) {
 	}
 }
 
-// TestInvalidDecodeString for testing errors when decoding branca tokens.
+// TestInvalidDecodeString for testing errors when decoding pomelo tokens.
 func TestInvalidDecodeString(t *testing.T) {
 	testVectors = []struct {
 		key       string
