@@ -47,22 +47,22 @@ type Pomelo struct {
 }
 
 // SetTTL sets a Time To Live on the token for valid tokens.
-func (b *Pomelo) SetTTL(ttl uint32) {
-	b.ttl = ttl
+func (p *Pomelo) SetTTL(ttl uint32) {
+	p.ttl = ttl
 }
 
 // setTimeStamp sets a timestamp for testing.
-func (b *Pomelo) setTimeStamp(timestamp uint32) {
-	b.timestamp = timestamp
+func (p *Pomelo) setTimeStamp(timestamp uint32) {
+	p.timestamp = timestamp
 }
 
 // setNonce sets a nonce for testing.
-func (b *Pomelo) setNonce(nonce string) {
-	b.nonce = nonce
+func (p *Pomelo) setNonce(nonce string) {
+	p.nonce = nonce
 }
 
 // NewPomelo creates a *Pomelo struct.
-func NewPomelo(key string) (b *Pomelo) {
+func NewPomelo(key string) (p *Pomelo) {
 	return &Pomelo{
 		Key: key,
 	}
@@ -70,28 +70,28 @@ func NewPomelo(key string) (b *Pomelo) {
 
 // EncodeToString encodes the data matching the format:
 // Version (byte) || Timestamp ([4]byte) || Nonce ([24]byte) || Ciphertext ([]byte) || Tag ([16]byte)
-func (b *Pomelo) EncodeToString(data string) (string, error) {
+func (p *Pomelo) EncodeToString(data string) (string, error) {
 	var timestamp uint32
 	var nonce []byte
-	if b.timestamp == 0 {
-		b.timestamp = uint32(time.Now().Unix())
+	if p.timestamp == 0 {
+		p.timestamp = uint32(time.Now().Unix())
 	}
-	timestamp = b.timestamp
+	timestamp = p.timestamp
 
-	if len(b.nonce) == 0 {
+	if len(p.nonce) == 0 {
 		nonce = make([]byte, 24)
 		if _, err := rand.Read(nonce); err != nil {
 			return "", err
 		}
 	} else {
-		noncebytes, err := hex.DecodeString(b.nonce)
+		noncebytes, err := hex.DecodeString(p.nonce)
 		if err != nil {
 			return "", ErrInvalidToken
 		}
 		nonce = noncebytes
 	}
 
-	key := bytes.NewBufferString(b.Key).Bytes()
+	key := bytes.NewBufferString(p.Key).Bytes()
 	payload := bytes.NewBufferString(data).Bytes()
 
 	timeBuffer := make([]byte, 4)
@@ -115,7 +115,7 @@ func (b *Pomelo) EncodeToString(data string) (string, error) {
 }
 
 // DecodeToString decodes the data.
-func (b *Pomelo) DecodeToString(data string) (string, error) {
+func (p *Pomelo) DecodeToString(data string) (string, error) {
 	if len(data) < 62 {
 		return "", fmt.Errorf("%w: length is less than 62", ErrInvalidToken)
 	}
@@ -137,7 +137,7 @@ func (b *Pomelo) DecodeToString(data string) (string, error) {
 		return "", fmt.Errorf("%w: got %#X but expected %#X", ErrInvalidTokenVersion, tokenversion, version)
 	}
 
-	key := bytes.NewBufferString(b.Key).Bytes()
+	key := bytes.NewBufferString(p.Key).Bytes()
 
 	xchacha, err := chacha20poly1305.NewX(key)
 	if err != nil {
@@ -148,8 +148,8 @@ func (b *Pomelo) DecodeToString(data string) (string, error) {
 		return "", err
 	}
 
-	if b.ttl != 0 {
-		future := int64(timestamp + b.ttl)
+	if p.ttl != 0 {
+		future := int64(timestamp + p.ttl)
 		now := time.Now().Unix()
 		if future < now {
 			return "", &ErrExpiredToken{Time: time.Unix(future, 0)}
