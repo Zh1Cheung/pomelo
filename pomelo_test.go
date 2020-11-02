@@ -27,12 +27,12 @@ func TestVector1(t *testing.T) {
 	}
 
 	for _, table := range testVectors {
-		b := NewPomelo(table.key)
-		b.setNonce(table.nonce)
-		b.setTimeStamp(table.timestamp)
+		p := NewPomelo(table.key)
+		p.setNonce(table.nonce)
+		p.setTimeStamp(table.timestamp)
 
 		// Encode string.
-		encoded, err := b.EncodeToString(table.payload)
+		encoded, err := p.EncodeToString(table.payload)
 		if err != nil {
 			t.Errorf("%q", err)
 		}
@@ -41,7 +41,7 @@ func TestVector1(t *testing.T) {
 		}
 
 		// Decode string.
-		decoded, err := b.DecodeToString(encoded)
+		decoded, err := p.DecodeToString(encoded)
 		if err != nil {
 			t.Errorf("%q", err)
 		}
@@ -51,7 +51,7 @@ func TestVector1(t *testing.T) {
 	}
 }
 
-// TestVector2 for testing encoding data to a valid pomelo token.
+// TestVector2 for testing encoding data to a valid pomelo token with a TTL.
 func TestVector2(t *testing.T) {
 	testVectors = []struct {
 		key       string
@@ -64,12 +64,12 @@ func TestVector2(t *testing.T) {
 	}
 
 	for _, table := range testVectors {
-		b := NewPomelo(table.key)
-		b.setNonce(table.nonce)
-		b.setTimeStamp(table.timestamp)
+		p := NewPomelo(table.key)
+		p.setNonce(table.nonce)
+		p.setTimeStamp(table.timestamp)
 
 		// Encode string.
-		encoded, err := b.EncodeToString(table.payload)
+		encoded, err := p.EncodeToString(table.payload)
 		if err != nil {
 			t.Errorf("%q", err)
 		}
@@ -78,8 +78,8 @@ func TestVector2(t *testing.T) {
 		}
 
 		// Decode string with TTL. Should throw an error with no token encoded because it has expired.
-		b.SetTTL(3600)
-		decoded, derr := b.DecodeToString(encoded)
+		p.SetTTL(3600)
+		decoded, derr := p.DecodeToString(encoded)
 		if derr == nil {
 			t.Errorf("%q", derr)
 		}
@@ -103,10 +103,10 @@ func TestGenerateToken(t *testing.T) {
 
 	for _, table := range testVectors {
 		// Not generated with set timestamp.
-		b := NewPomelo(table.key)
+		p := NewPomelo(table.key)
 
 		// Encode string.
-		encoded, err := b.EncodeToString(table.payload)
+		encoded, err := p.EncodeToString(table.payload)
 		if err != nil {
 			t.Errorf("%q", err)
 		}
@@ -133,9 +133,9 @@ func TestInvalidEncodeString(t *testing.T) {
 	}
 
 	for _, table := range testVectors {
-		b := NewPomelo(table.key)
+		p := NewPomelo(table.key)
 
-		_, err := b.EncodeToString(table.payload)
+		_, err := p.EncodeToString(table.payload)
 		if err == nil {
 			t.Errorf("%q", err)
 		}
@@ -162,9 +162,9 @@ func TestInvalidDecodeString(t *testing.T) {
 	}
 
 	for _, table := range testVectors {
-		b := NewPomelo(table.key)
+		p := NewPomelo(table.key)
 
-		_, err := b.DecodeToString(table.expected)
+		_, err := p.DecodeToString(table.expected)
 		if err == nil {
 			t.Errorf("%q", err)
 		}
